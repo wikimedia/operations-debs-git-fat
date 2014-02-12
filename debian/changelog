@@ -1,0 +1,5 @@
+git-fat (0.1.0-1) precise-wikimedia; urgency=low
+
+  * Initial package
+
+ -- Andrew Otto (WMF) <otto@wikimedia.org>  Wed, 12 Feb 2014 21:14:02 +0000

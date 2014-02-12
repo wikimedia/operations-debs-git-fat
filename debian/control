@@ -1,0 +1,32 @@
+Source: git-fat
+Maintainer: Andrew Otto (WMF) <otto@wikimedia.org>
+Section: net
+Priority: extra
+Build-Depends: python, debhelper (>= 9)
+Standards-Version: 3.9.5
+Vcs-Git: https://github.com/jedbrown/git-fat.git
+Vcs-Browser: https://github.com/jedbrown/git-fat
+
+Package: git-fat
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}, git-core
+X-Python-Version: >= 2.6
+Provides: ${python:Provides}
+Description: Manage large files with git, without checking the files into git.
+ git-fat maintains metadata about locations of files without checking the files
+ into git.  It relies on a configurable centralized rsync location to sync files
+ between checkouts of git repositories.
+ .
+ Features:
+ .
+   - clones of the source repository are small and fast because no
+     binaries are transferred, yet fully functional (unlike git clone --depth)
+   - git-fat supports the same workflow for large binaries and traditionally
+     versioned files, but internally manages the "fat" files separately
+   - git-bisect works properly even when versions of the binary files change
+     over time
+   - selective control of which large files to pull into the local store
+   - local fat object stores can be shared between multiple clones, even by
+     different users
+   - can easily support fat object stores distributed across multiple hosts
+   - depends only on stock Python and rsync
