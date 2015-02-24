@@ -1,3 +1,9 @@
+git-fat (0.1.1-2) precise-wikimedia; urgency=medium
+
+  * Depend on rsync
+
+ -- Filippo Giunchedi <filippo@wikimedia.org>  Tue, 24 Feb 2015 14:29:19 +0000
+
 git-fat (0.1.1-1) precise-wikimedia; urgency=low
 
   * Now supporting arbitrary rsync options

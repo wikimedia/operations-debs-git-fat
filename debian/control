@@ -9,7 +9,7 @@ Vcs-Browser: https://github.com/jedbrown/git-fat
 
 Package: git-fat
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, git-core
+Depends: ${misc:Depends}, ${python:Depends}, git-core, rsync
 X-Python-Version: >= 2.6
 Provides: ${python:Provides}
 Description: Manage large files with git, without checking the files into git.
