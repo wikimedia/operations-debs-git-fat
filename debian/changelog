@@ -1,3 +1,9 @@
+git-fat (0.1.2-1) trusty-wikimedia; urgency=medium
+
+  * Release 0.1.2 from jedbrown/master.
+
+ -- Andrew Otto (WMF) <otto@wikimedia.org>  Thu, 9 Feb 2017 15:44:50 +0000
+
 git-fat (0.1.1-2) precise-wikimedia; urgency=medium
 
   * Depend on rsync
