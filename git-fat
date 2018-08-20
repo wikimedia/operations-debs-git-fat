@@ -146,6 +146,7 @@ class GitFat(object):
     DecodeError = RuntimeError
 
     def __init__(self):
+<<<<<<< HEAD
         self.verbose = (verbose_stderr if os.environ.get('GIT_FAT_VERBOSE')
                         else verbose_ignore)
         try:
@@ -155,6 +156,14 @@ class GitFat(object):
             sys.exit(1)
         self.gitdir = subprocess.check_output(
             'git rev-parse --git-dir'.split()).strip()
+=======
+        self.verbose = verbose_stderr if os.environ.get('GIT_FAT_VERBOSE') else verbose_ignore
+        try:
+            self.gitroot = subprocess.check_output('git rev-parse --show-toplevel'.split()).strip()
+        except subprocess.CalledProcessError:
+            sys.exit(1)
+        self.gitdir = subprocess.check_output('git rev-parse --git-dir'.split()).strip()
+>>>>>>> master
         self.objdir = os.path.join(self.gitdir, 'fat', 'objects')
         if os.environ.get('GIT_FAT_VERSION') == '1':
             self.encode = self.encode_v1
@@ -172,6 +181,7 @@ class GitFat(object):
 
     def setup(self):
         mkdir_p(self.objdir)
+<<<<<<< HEAD
 
     def is_init_done(self):
         return (gitconfig_get('filter.fat.clean') or
@@ -184,6 +194,15 @@ class GitFat(object):
             sys.stderr.write('Run "git fat init" to configure.\n')
             sys.exit(1)
 
+=======
+    def is_init_done(self):
+        return gitconfig_get('filter.fat.clean') or gitconfig_get('filter.fat.smudge')
+    def assert_init_done(self):
+        if not self.is_init_done():
+            sys.stderr.write('fatal: git-fat is not yet configured in this repository.\n')
+            sys.stderr.write('Run "git fat init" to configure.\n')
+            sys.exit(1)
+>>>>>>> master
     def get_rsync(self):
         cfgpath = os.path.join(self.gitroot, '.gitfat')
         remote = gitconfig_get('rsync.remote', file=cfgpath)
@@ -294,7 +313,6 @@ class GitFat(object):
             cached = False                # changes to True when file is cached
             with os.fdopen(fd, 'w') as cache:
                 outstream = cache
-                blockiter = readblocks(instream)
                 firstblock = True
                 for block in readblocks(instream):
                     if firstblock:
@@ -367,24 +385,34 @@ class GitFat(object):
         elif rev is None:
             rev = self.revparse('HEAD')
         # Revision list gives us object names to inspect with cat-file...
+<<<<<<< HEAD
         p1 = subprocess.Popen(['git', 'rev-list', '--objects', rev],
                               stdout=subprocess.PIPE)
 
+=======
+        p1 = subprocess.Popen(['git','rev-list','--objects',rev], stdout=subprocess.PIPE)
+>>>>>>> master
         def cut_sha1hash(input, output):
             for line in input:
                 output.write(line.split()[0] + '\n')
             output.close()
+<<<<<<< HEAD
         # ...`cat-file --batch-check` filters for git-fat object candidates in
         # bulk...
         p2 = subprocess.Popen(['git', 'cat-file', '--batch-check'],
                               stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
+=======
+        # ...`cat-file --batch-check` filters for git-fat object candidates in bulk...
+        p2 = subprocess.Popen(['git','cat-file','--batch-check'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+>>>>>>> master
         def filter_gitfat_candidates(input, output):
             for line in input:
                 objhash, objtype, size = line.split()
                 if objtype == 'blob' and int(size) in self.magiclens:
                     output.write(objhash + '\n')
             output.close()
+<<<<<<< HEAD
         # ...`cat-file --batch` provides full contents of git-fat candidates in
         # bulk
         p3 = subprocess.Popen(['git', 'cat-file', '--batch'],
@@ -394,6 +422,13 @@ class GitFat(object):
                                       args=(p1.stdout, p2.stdin))
         filter_thread = threading.Thread(target=filter_gitfat_candidates,
                                          args=(p2.stdout, p3.stdin))
+=======
+        # ...`cat-file --batch` provides full contents of git-fat candidates in bulk
+        p3 = subprocess.Popen(['git','cat-file','--batch'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        # Stream data: p1 | cut_thread | p2 | filter_thread | p3
+        cut_thread = threading.Thread(target=cut_sha1hash, args=(p1.stdout, p2.stdin))
+        filter_thread = threading.Thread(target=filter_gitfat_candidates, args=(p2.stdout, p3.stdin))
+>>>>>>> master
         cut_thread.start()
         filter_thread.start()
         # Process metadata + content format provided by `cat-file --batch`
@@ -433,12 +468,19 @@ class GitFat(object):
         return referenced
 
     def orphan_files(self, patterns=[]):
+<<<<<<< HEAD
         """
         generator for all orphan placeholders in the working tree
         """
         ls_files = subprocess.check_output(
             ['git', 'ls-files', '-z'] + patterns).split('\x00')[:-1]
         for fname in ls_files:
+=======
+        'generator for all orphan placeholders in the working tree'
+        if not patterns or patterns == ['']:
+            patterns = ['.']
+        for fname in subprocess.check_output(['git', 'ls-files', '-z'] + patterns).split('\x00')[:-1]:
+>>>>>>> master
             digest = self.decode_file(fname)[0]
             if digest:
                 yield (digest, fname)
@@ -480,7 +522,10 @@ class GitFat(object):
         p.communicate(input='\x00'.join(files))
         if p.returncode:
             sys.exit(p.returncode)
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
     def checkout(self, show_orphans=False):
         'Update any stale files in the present working tree'
         self.assert_init_done()
@@ -576,7 +621,11 @@ class GitFat(object):
     def cmd_init(self):
         self.setup()
         if self.is_init_done():
+<<<<<<< HEAD
             print('Git fat already setup, check configuration in .git/config')
+=======
+            print('Git fat already configured, check configuration in .git/config')
+>>>>>>> master
         else:
             gitconfig_set('filter.fat.clean', 'git-fat filter-clean')
             gitconfig_set('filter.fat.smudge', 'git-fat filter-smudge')
@@ -638,6 +687,7 @@ class GitFat(object):
             if bsize:                     # We care about this blob
                 pathsizes[path].add(bsize)
         time1 = time.time()
+<<<<<<< HEAD
         self.verbose('Found %d paths in %.3f s' %
                      (len(pathsizes), time1-time0))
         maxlen = max(map(len, pathsizes)) if pathsizes else 0
@@ -647,6 +697,12 @@ class GitFat(object):
         for path, sizes in sorted_stuff:
             print('%-*s filter=fat -text # %10d %d' %
                   (maxlen, path, max(sizes), len(sizes)))
+=======
+        self.verbose('Found %d paths in %.3f s' % (len(pathsizes), time1-time0))
+        maxlen = max(map(len,pathsizes)) if pathsizes else 0
+        for path, sizes in sorted(pathsizes.items(), key=lambda ps: max(ps[1]), reverse=True):
+            print('%-*s filter=fat -text # %10d %d' % (maxlen, path,max(sizes),len(sizes)))
+>>>>>>> master
         revlist.wait()
         difftree.wait()
 
@@ -743,5 +799,9 @@ if __name__ == '__main__':
     elif cmd == 'index-filter':
         fat.cmd_index_filter(sys.argv[2:])
     else:
+<<<<<<< HEAD
         cmds = 'init|status|push|pull|gc|verify|checkout|find|index-filter'
         print('Usage: git fat [%s]' % cmds, file=sys.stderr)
+=======
+        print('Usage: git fat [init|status|push|pull|gc|verify|checkout|find|index-filter]', file=sys.stderr)
+>>>>>>> master
